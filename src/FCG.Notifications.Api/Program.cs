@@ -15,7 +15,7 @@ try
     var builder = WebApplication.CreateBuilder(args);
     builder.Host.UseSerilog();
 
-    builder.Services.AddFcgMessaging(builder.Configuration, x =>
+    builder.Services.AddFcgMessaging(builder.Configuration, "notifications", x =>
     {
         x.AddConsumer<UserCreatedConsumer>();
         x.AddConsumer<PaymentProcessedConsumer>();
