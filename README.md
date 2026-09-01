@@ -1,28 +1,28 @@
-﻿> **Nota:** Esta e a copia independente do microsservico **NotificationsAPI** gerada por split-repos.ps1 a partir do monorepo TechChallenge-Fiap-FCG. Shared/ foi embedded em ./shared/. Build local: docker build -t fcg-notifications-api . (da raiz deste repo).
+> **Nota:** Esta e a copia independente do microsservico **NotificationsAPI** gerada por split-repos.ps1 a partir do monorepo TechChallenge-Fiap-FCG. Shared/ foi embedded em ./shared/. Build local: docker build -t fcg-notifications-api . (da raiz deste repo).
 
 ---
 
-# NotificationsAPI â€” FCG MicrosserviÃ§o de NotificaÃ§Ãµes
+# NotificationsAPI — FCG Microsserviço de Notificações
 
-MicrosserviÃ§o **consumer-only**. Escuta eventos do RabbitMQ e "envia" notificaÃ§Ãµes por e-mail (simulado via log no console, conforme requisito do PDF da Fase 2).
+Microsserviço **consumer-only**. Escuta eventos do RabbitMQ e "envia" notificações por e-mail (simulado via log no console, conforme requisito do PDF da Fase 2).
 
 ---
 
 ## Responsabilidades
 
-- Consumir `UserCreatedEvent` â†’ log de boas-vindas
-- Consumir `PaymentProcessedEvent` â†’ log de confirmaÃ§Ã£o (Approved) ou de falha (Rejected)
+- Consumir `UserCreatedEvent` → log de boas-vindas
+- Consumir `PaymentProcessedEvent` → log de confirmação (Approved) ou de falha (Rejected)
 
-## NÃ£o Ã© responsabilidade
+## Não é responsabilidade
 
-- Expor endpoints REST de negÃ³cio (apenas `/health` e `/`)
-- Persistir mensagens enviadas (stateless â€” replay via redelivery do broker)
+- Expor endpoints REST de negócio (apenas `/health` e `/`)
+- Persistir mensagens enviadas (stateless — replay via redelivery do broker)
 
 ---
 
 ## Eventos consumidos
 
-| Evento | Origem | AÃ§Ã£o |
+| Evento | Origem | Ação |
 |---|---|---|
 | `UserCreatedEvent` | UsersAPI | Log: `[EMAIL] Bem-vindo(a), {Name}!` |
 | `PaymentProcessedEvent` (Approved) | PaymentsAPI | Log: `[EMAIL] Compra aprovada! '{GameName}' adicionado...` |
@@ -34,15 +34,15 @@ Nenhum.
 
 ---
 
-## VariÃ¡veis de ambiente
+## Variáveis de ambiente
 
-| VariÃ¡vel | Default | DescriÃ§Ã£o |
+| Variável | Default | Descrição |
 |---|---|---|
 | `RabbitMq__Host` | `localhost` | Host do broker |
 | `RabbitMq__Port` | `5672` | Porta AMQP |
 | `RabbitMq__Username` / `__Password` | `guest`/`guest` | Credenciais |
 
-NÃ£o precisa de `ConnectionStrings__DefaultConnection` nem de `JwtSettings` â€” o serviÃ§o Ã© stateless e nÃ£o autentica usuÃ¡rios.
+Não precisa de `ConnectionStrings__DefaultConnection` nem de `JwtSettings` — o serviço é stateless e não autentica usuários.
 
 ---
 
@@ -61,7 +61,7 @@ curl -X POST http://localhost:5001/api/auth/register `
   -d '{"name":"Teste","email":"teste@exemplo.com","password":"Senha@1234"}'
 
 # No console da NotificationsAPI deve aparecer:
-# [EMAIL] Bem-vindo(a), Teste! ConfirmaÃ§Ã£o de cadastro enviada para teste@exemplo.com ...
+# [EMAIL] Bem-vindo(a), Teste! Confirmação de cadastro enviada para teste@exemplo.com ...
 ```
 
 ### Deploy K8s
@@ -73,9 +73,9 @@ kubectl logs -n fcg -l app=notifications-api -f
 
 ---
 
-## DecisÃµes arquiteturais
+## Decisões arquiteturais
 
-- **Stateless** â€” sem banco de dados. Em produÃ§Ã£o, considerar log de envios para auditoria/idempotÃªncia cross-restart.
-- **Sem deduplicaÃ§Ã£o por `MessageId` ainda** â€” para eventos de notificaÃ§Ã£o, pequena duplicaÃ§Ã£o Ã© aceitÃ¡vel (no pior caso o usuÃ¡rio recebe 2 e-mails). Em fluxos crÃ­ticos (pagamentos), o `MessageId` Ã© usado em CatalogAPI/PaymentsAPI.
-- **Sem retries customizados alÃ©m do default do MassTransit** â€” polÃ­tica global em `FCG.BuildingBlocks/MessagingExtensions.cs` (3 retries com backoff: 2s, 5s, 15s).
+- **Stateless** — sem banco de dados. Em produção, considerar log de envios para auditoria/idempotência cross-restart.
+- **Sem deduplicação por `MessageId` ainda** — para eventos de notificação, pequena duplicação é aceitável (no pior caso o usuário recebe 2 e-mails). Em fluxos críticos (pagamentos), o `MessageId` é usado em CatalogAPI/PaymentsAPI.
+- **Sem retries customizados além do default do MassTransit** — política global em `FCG.BuildingBlocks/MessagingExtensions.cs` (3 retries com backoff: 2s, 5s, 15s).
 
