@@ -1,3 +1,10 @@
+> **⚠️ Repositório descontinuado.** Na Fase 3 do Tech Challenge, este serviço foi
+> substituído pela função serverless **`fcg-notifications-fn`**, que faz o mesmo
+> trabalho mas só existe enquanto há mensagem para processar — em vez de manter um
+> contêiner ligado 24 horas por dia aguardando eventos. O código aqui permanece
+> como referência histórica da Fase 2.
+
+---
 > **Nota:** Esta e a copia independente do microsservico **NotificationsAPI** gerada por split-repos.ps1 a partir do monorepo TechChallenge-Fiap-FCG. Shared/ foi embedded em ./shared/. Build local: docker build -t fcg-notifications-api . (da raiz deste repo).
 
 ---
@@ -78,4 +85,5 @@ kubectl logs -n fcg -l app=notifications-api -f
 - **Stateless** — sem banco de dados. Em produção, considerar log de envios para auditoria/idempotência cross-restart.
 - **Sem deduplicação por `MessageId` ainda** — para eventos de notificação, pequena duplicação é aceitável (no pior caso o usuário recebe 2 e-mails). Em fluxos críticos (pagamentos), o `MessageId` é usado em CatalogAPI/PaymentsAPI.
 - **Sem retries customizados além do default do MassTransit** — política global em `FCG.BuildingBlocks/MessagingExtensions.cs` (3 retries com backoff: 2s, 5s, 15s).
+
 
