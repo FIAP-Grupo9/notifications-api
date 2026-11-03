@@ -80,6 +80,15 @@ kubectl logs -n fcg -l app=notifications-api -f
 
 ---
 
+## CI/CD
+
+GitHub Actions (`.github/workflows/ci.yml`):
+
+- **CI** — em todo push ou pull request para `master`: `dotnet restore` + `build` do `NotificationsAPI.sln`. Ainda não há projeto de testes neste serviço.
+- **CD** — só em push na `master`: build e publicação da imagem Docker em `ghcr.io/fiap-grupo9/notifications-api` (tags `latest` e `<sha>`), usando o token automático do Actions.
+
+Não há deploy automático: o único ambiente hoje é o Kubernetes/docker-compose local (ver `orchestration`), fora do alcance do GitHub Actions. A imagem fica publicada no registry, pronta para um deploy manual.
+
 ## Decisões arquiteturais
 
 - **Stateless** — sem banco de dados. Em produção, considerar log de envios para auditoria/idempotência cross-restart.
