@@ -84,10 +84,11 @@ kubectl logs -n fcg -l app=notifications-api -f
 
 GitHub Actions (`.github/workflows/ci.yml`):
 
-- **CI** — em todo push ou pull request para `master`: `dotnet restore` + `build` do `NotificationsAPI.sln`. Ainda não há projeto de testes neste serviço.
-- **CD** — só em push na `master`: build e publicação da imagem Docker em `ghcr.io/fiap-grupo9/notifications-api` (tags `latest` e `<sha>`), usando o token automático do Actions.
+- **CI** — em todo push ou pull request: `dotnet restore` + `build` do `NotificationsAPI.sln`. Ainda não há projeto de testes neste serviço.
+- **CD** — só em push na `master`: build e publicação da imagem Docker no **Azure Container Registry** (`$ACR_LOGIN_SERVER/notifications-api`, tags `latest` e `<sha>`), autenticando com o Service Principal do projeto.
+- **Deploy** — na sequência, aplica `k8s/configmap.yaml`/`secret.yaml` e `k8s/deployment.yaml`/`service.yaml` com a imagem recém-publicada no **AKS**, confirmando rolling update sem downtime com `kubectl rollout status`. `k8s/secret.yaml` só guarda `guest`/`guest` (credencial padrão de desenvolvimento do próprio RabbitMQ, não um segredo de negócio), por isso não precisa de substituição via `envsubst` como nos demais serviços.
 
-Não há deploy automático: o único ambiente hoje é o Kubernetes/docker-compose local (ver `orchestration`), fora do alcance do GitHub Actions. A imagem fica publicada no registry, pronta para um deploy manual.
+Secrets do GitHub usados por este workflow (nível de organização `FIAP-Grupo9`): `AZURE_CREDENTIALS`, `ACR_LOGIN_SERVER`, `AKS_RESOURCE_GROUP`, `AKS_CLUSTER_NAME`. A infraestrutura compartilhada (Postgres, RabbitMQ, MongoDB, Redis, Elasticsearch, Kong) é aplicada separadamente pelo workflow `deploy-infra.yml` do repositório `orchestration` — ver o README dele.
 
 ## Decisões arquiteturais
 
